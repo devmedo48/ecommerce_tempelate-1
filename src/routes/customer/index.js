@@ -8,11 +8,13 @@ import { authenticate } from "../../middleware/auth.js";
 
 const router = Router();
 
-router.use(authenticate);
+// Public routes (no auth required)
 router.use("/products", productRoute);
-router.use("/orders", orderRoute);
 router.use("/reviews", reviewRoute);
-router.use("/addresses", addressRoute);
-router.use("/payments", paymentRoute);
+
+// Protected routes (auth required)
+router.use("/orders", authenticate, orderRoute);
+router.use("/addresses", authenticate, addressRoute);
+router.use("/payments", authenticate, paymentRoute);
 
 export default router;

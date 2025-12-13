@@ -2,13 +2,7 @@
 import { asyncHandler } from "../../middleware/errorHandler.js";
 import AppError from "../../utils/appError.js";
 import { isOfferActive, applyDiscount } from "../../utils/offerUtils.js";
-import {
-  createPayment,
-  toSmallestUnit,
-  requiresRedirect,
-} from "../../services/paymentService.js";
-
-const CALLBACK_URL = process.env.API_URL + "/v1/customer/payments/callback";
+import { toSmallestUnit } from "../../services/paymentService.js";
 
 /**
  * @desc Place a new order
@@ -200,91 +194,19 @@ export const placeOrder = asyncHandler(async (req, res) => {
     });
   }
 
-  // ONLINE Payment - Create Moyasar payment
-  const paymentResult = await createPayment({
-    amount: amountInSmallestUnit,
-    currency: "SAR",
-    description: `Order #${order.orderNumber}`,
-    callbackUrl: CALLBACK_URL,
-    source: {
-      type: "creditcard",
-      name: req.body.cardName || "Customer",
-      number: req.body.cardNumber,
-      month: req.body.cardMonth,
-      year: req.body.cardYear,
-      cvc: req.body.cardCvc,
-    },
-    metadata: {
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-    },
-  });
-
-  if (!paymentResult.success) {
-    // Payment creation failed - mark order as failed
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { paymentStatus: "FAILED" },
-    });
-
-    throw new AppError(paymentResult.error || "Payment creation failed", 400);
-  }
-
-  // Update order with payment ID
-  await prisma.order.update({
-    where: { id: order.id },
-    data: { paymentId: paymentResult.data.id },
-  });
-
-  const payment = paymentResult.data;
-
-  // Check if 3DS redirect is required
-  if (requiresRedirect(payment)) {
-    return res.status(201).json({
-      success: true,
-      data: {
-        order,
-        payment: {
-          id: payment.id,
-          status: payment.status,
-          redirectUrl: payment.source.transaction_url,
-        },
-      },
-      message: "Please complete payment authentication",
-      requiresRedirect: true,
-    });
-  }
-
-  // Payment completed immediately (rare, usually needs 3DS)
-  if (payment.status === "paid") {
-    await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        paymentStatus: "PAID",
-        status: "CONFIRMED",
-      },
-    });
-
-    return res.status(201).json({
-      success: true,
-      data: { ...order, paymentStatus: "PAID", status: "CONFIRMED" },
-      message: "Payment successful. Order confirmed.",
-    });
-  }
-
-  // Payment failed
-  if (payment.status === "failed") {
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { paymentStatus: "FAILED" },
-    });
-
-    throw new AppError(payment.source?.message || "Payment failed", 400);
-  }
-
-  res.status(201).json({
+  // ONLINE Payment - Return order for frontend to show Moyasar Form
+  // Frontend uses Moyasar JS library which handles card input securely
+  return res.status(201).json({
     success: true,
-    data: { order, paymentStatus: payment.status },
+    data: {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      totalAmount: Number(order.totalAmount),
+      totalAmountInSmallestUnit: order.totalAmountInSmallestUnit,
+      paymentStatus: order.paymentStatus,
+      status: order.status,
+    },
+    message: "Order created. Complete payment.",
   });
 });
 

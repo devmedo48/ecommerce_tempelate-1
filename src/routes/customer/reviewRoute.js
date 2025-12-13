@@ -15,22 +15,11 @@ import {
   getProductReviewsQuerySchema,
   paginationSchema,
 } from "../../validation/index.js";
+import { authenticate } from "../../middleware/auth.js";
 
 const router = Router();
 
-// User's reviews
-router.get("/me", validate(paginationSchema, "query"), getMyReviews);
-
-// CRUD for reviews
-router.post("/", validate(createReviewSchema), createReview);
-router.put(
-  "/:id",
-  validate({ params: reviewIdSchema, body: updateReviewSchema }),
-  updateReview
-);
-router.delete("/:id", validate({ params: reviewIdSchema }), deleteReview);
-
-// Product reviews
+// Public: Get product reviews
 router.get(
   "/product/:productId",
   validate({
@@ -38,6 +27,27 @@ router.get(
     query: getProductReviewsQuerySchema,
   }),
   getProductReviews
+);
+
+// Protected: User's own reviews and CRUD
+router.get(
+  "/me",
+  authenticate,
+  validate(paginationSchema, "query"),
+  getMyReviews
+);
+router.post("/", authenticate, validate(createReviewSchema), createReview);
+router.put(
+  "/:id",
+  authenticate,
+  validate({ params: reviewIdSchema, body: updateReviewSchema }),
+  updateReview
+);
+router.delete(
+  "/:id",
+  authenticate,
+  validate({ params: reviewIdSchema }),
+  deleteReview
 );
 
 export default router;

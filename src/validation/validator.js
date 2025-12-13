@@ -29,10 +29,13 @@ export const validate = (schemaOrMap, defaultSource = "body") => {
     try {
       const validationMap = {};
 
-      if (
-        schemaOrMap instanceof z.ZodType ||
-        schemaOrMap instanceof z.ZodSchema
-      ) {
+      // Check if schemaOrMap is a Zod schema (duck typing for Zod 4.x compatibility)
+      const isZodSchema =
+        schemaOrMap &&
+        typeof schemaOrMap.parse === "function" &&
+        typeof schemaOrMap.safeParse === "function";
+
+      if (isZodSchema) {
         // Old signature: validate(schema, source)
         validationMap[defaultSource] = schemaOrMap;
       } else {
@@ -57,9 +60,10 @@ export const validate = (schemaOrMap, defaultSource = "body") => {
         // e.g. req.validatedData.body, req.validatedData.params
         req.validatedData[source] = validated;
 
-        // Also update the original request object with transformed data
-        // This ensures subsequent middleware/controllers usage sees the validated/transformed values
-        req[source] = validated;
+        // Only update req.body as req.query and req.params are read-only in Express 5.x
+        if (source === "body") {
+          req[source] = validated;
+        }
 
         // Merge validated data into req.validatedData (Flat structure for backward compatibility)
         // Note: If multiple sources have same keys, last one wins. Use req.validatedData[source] for precision.

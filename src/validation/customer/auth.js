@@ -48,3 +48,19 @@ export const updateProfileSchema = z.object({
     )
     .optional(),
 });
+
+// Email/Password Auth Schemas
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string({ required_error: "Password is required" }).min(1),
+});
+
+export const registerSchema = z.object({
+  email: emailSchema,
+  password: z
+    .string({ required_error: "Password is required" })
+    .min(6, "Password must be at least 6 characters"),
+  firstName: z.string().min(1).max(50).optional(),
+  lastName: z.string().min(1).max(50).optional(),
+  phone: z.string().max(20).optional(),
+});

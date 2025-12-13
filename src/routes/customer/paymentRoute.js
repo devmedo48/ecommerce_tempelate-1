@@ -3,8 +3,50 @@ import { asyncHandler } from "../../middleware/errorHandler.js";
 import prisma from "../../config/database.js";
 import { verifyPayment } from "../../services/paymentService.js";
 import AppError from "../../utils/appError.js";
+import { authenticate } from "../../middleware/auth.js";
 
 const router = Router();
+
+/**
+ * @desc Save payment ID before Moyasar 3DS redirect
+ * @route POST /api/v1/customer/payments/save
+ */
+router.post(
+  "/save",
+  authenticate,
+  asyncHandler(async (req, res) => {
+    const { orderId, paymentId } = req.body;
+    const userId = req.user.id;
+
+    if (!orderId || !paymentId) {
+      throw new AppError("Order ID and Payment ID are required", 400);
+    }
+
+    // Find order and verify ownership
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new AppError("Order not found", 404);
+    }
+
+    if (order.customerId !== userId) {
+      throw new AppError("Unauthorized", 403);
+    }
+
+    // Update order with payment ID
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { paymentId },
+    });
+
+    res.json({
+      success: true,
+      message: "Payment ID saved",
+    });
+  })
+);
 
 /**
  * @desc Payment callback - called by Moyasar after payment completion
@@ -25,19 +67,22 @@ router.get(
     });
 
     if (!order) {
-      throw new AppError("Order not found for this payment", 404);
+      // Redirect to frontend callback which will handle the error
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/payment/callback?id=${paymentId}&error=order_not_found`
+      );
     }
 
-    // If payment is already processed, redirect to success/failure page
+    // If payment is already processed, redirect to frontend
     if (order.paymentStatus === "PAID") {
       return res.redirect(
-        `${process.env.FRONTEND_URL}/orders/${order.id}?status=success`
+        `${process.env.FRONTEND_URL}/payment/callback?id=${paymentId}&status=paid&orderNumber=${order.orderNumber}`
       );
     }
 
     if (order.paymentStatus === "FAILED") {
       return res.redirect(
-        `${process.env.FRONTEND_URL}/orders/${order.id}?status=failed`
+        `${process.env.FRONTEND_URL}/payment/callback?id=${paymentId}&status=failed`
       );
     }
 
@@ -59,7 +104,7 @@ router.get(
       });
 
       return res.redirect(
-        `${process.env.FRONTEND_URL}/orders/${order.id}?status=success`
+        `${process.env.FRONTEND_URL}/payment/callback?id=${paymentId}&status=paid&orderNumber=${order.orderNumber}`
       );
     } else {
       // Update order as failed
@@ -71,9 +116,9 @@ router.get(
       });
 
       return res.redirect(
-        `${process.env.FRONTEND_URL}/orders/${
-          order.id
-        }?status=failed&reason=${encodeURIComponent(
+        `${
+          process.env.FRONTEND_URL
+        }/payment/callback?id=${paymentId}&status=failed&reason=${encodeURIComponent(
           verification.error || "Payment verification failed"
         )}`
       );

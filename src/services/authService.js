@@ -5,8 +5,8 @@ import {
   verifyRefreshToken,
   generateDeviceHash,
 } from "../utils/jwt.js";
-import { hashToken, hashPassword, comparePassword } from "../utils/password.js"; // Reusing password utils for OTP hashing if needed
-import AppError  from "../utils/appError.js";
+import { hashPassword, comparePassword } from "../utils/password.js"; // Reusing password utils for OTP hashing if needed
+import AppError from "../utils/appError.js";
 import * as notificationService from "./notificationService.js";
 
 /**
@@ -158,4 +158,92 @@ export async function logout(tokenString) {
   } catch (err) {
     // Ignore if not found
   }
+}
+
+/**
+ * Register a new user with email and password.
+ * @param {object} userData - User registration data
+ * @param {string} userAgent - Browser user agent
+ */
+export async function registerWithPassword(userData, userAgent) {
+  const { email, password, firstName, lastName, phone } = userData;
+
+  // Check if user already exists
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    throw new AppError("Email already registered", 400);
+  }
+
+  // Hash password
+  const hashedPassword = await hashPassword(password);
+
+  // Create user with customer profile
+  const user = await prisma.user.create({
+    data: {
+      email,
+      password: hashedPassword,
+      firstName,
+      lastName,
+      phone,
+      role: "CUSTOMER",
+      customer: { create: {} },
+    },
+  });
+
+  // Generate tokens
+  return generateTokens(user, userAgent);
+}
+
+/**
+ * Login with email and password.
+ * @param {string} email
+ * @param {string} password
+ * @param {string} userAgent
+ */
+export async function loginWithPassword(email, password, userAgent) {
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    throw new AppError("Invalid email or password", 401);
+  }
+
+  if (!user.password) {
+    throw new AppError("Please use OTP login for this account", 400);
+  }
+
+  const isValid = await comparePassword(password, user.password);
+  if (!isValid) {
+    throw new AppError("Invalid email or password", 401);
+  }
+
+  if (!user.isActive) {
+    throw new AppError("Account is disabled", 403);
+  }
+
+  return generateTokens(user, userAgent);
+}
+
+/**
+ * Get current user info.
+ * @param {string} userId
+ */
+export async function getCurrentUser(userId) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      role: true,
+      createdAt: true,
+    },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  return user;
 }
