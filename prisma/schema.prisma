@@ -1,0 +1,311 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum PaymentMethod {
+  COD
+  ONLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY_FOR_PICKUP
+  ASSIGNED
+  PICKED_UP
+  ON_THE_WAY
+  DELIVERED
+  CANCELLED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum ChannelType {
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum OfferScope {
+  GLOBAL
+  PRODUCT
+}
+
+model Offer {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  type        DiscountType
+  value       Decimal
+  scope       OfferScope
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean      @default(true)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([startDate, endDate])
+  @@index([scope])
+}
+
+// User & Auth
+model User {
+  id        String  @id @default(uuid())
+  email     String  @unique
+  phone     String?
+  password  String?
+  firstName String?
+  lastName  String?
+  role      Role    @default(CUSTOMER)
+  isActive  Boolean @default(true)
+
+  // OTP Fields
+  otpCode           String?
+  otpExpiry         DateTime?
+  resetPasswordCode String?
+  resetCodeExpiry   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  addresses     Address[]
+  orders        Order[]
+  reviews       Review[]
+  refreshTokens RefreshToken[]
+
+  // Role specific profiles
+  admin    Admin?
+  customer Customer?
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId  String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Address {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  street  String
+  city    String
+  state   String?
+  zip     String?
+  country String  @default("Egypt")
+
+  isDefault Boolean @default(false)
+  label     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Profiles (kept from template structure, simplified where needed)
+model Admin {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Customer {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal
+  images      String[]
+  isActive    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  modifiers  ProductModifier[]
+  reviews    Review[]
+  orderItems OrderItem[]
+  offer      Offer?            @relation(fields: [offerId], references: [id], onDelete: SetNull)
+  offerId    String?
+
+  @@index([isActive])
+  @@index([offerId])
+  @@index([createdAt])
+}
+
+model ProductModifier {
+  id          String  @id @default(uuid())
+  productId   String
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name        String // e.g. "Size", "Toppings"
+  isRequired  Boolean @default(false)
+  multiSelect Boolean @default(false)
+
+  options ModifierOption[]
+}
+
+model ModifierOption {
+  id         String          @id @default(uuid())
+  modifierId String
+  modifier   ProductModifier @relation(fields: [modifierId], references: [id], onDelete: Cascade)
+  name       String // e.g. "Large", "Cheese", "Red"
+  price      Decimal         @default(0)
+  images     String[] // Variant specific images
+}
+
+model Review {
+  id        String  @id @default(uuid())
+  rating    Int
+  comment   String?
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([rating])
+}
+
+model Order {
+  id          String @id @default(uuid())
+  orderNumber String @unique @default(cuid())
+  customerId  String
+  customer    User   @relation(fields: [customerId], references: [id])
+
+  paymentMethod PaymentMethod
+  paymentStatus PaymentStatus @default(PENDING)
+  status        OrderStatus   @default(PENDING)
+
+  // Payment gateway tracking
+  paymentId                 String? // Moyasar payment ID
+  totalAmountInSmallestUnit Int? // Amount in smallest currency unit for verification
+
+  shippingAddress Json
+
+  // Financials
+  totalAmount    Decimal
+  discountAmount Decimal @default(0)
+  deliveryFee    Decimal @default(0)
+  couponId       String?
+  coupon         Coupon? @relation(fields: [couponId], references: [id], onDelete: SetNull)
+
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([paymentId])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  quantity          Int
+  unitPrice         Decimal
+  totalPrice        Decimal
+  selectedModifiers Json?
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Coupon {
+  id          String       @id @default(uuid())
+  code        String       @unique
+  type        DiscountType
+  value       Decimal
+  minPurchase Decimal?     @default(0)
+  limit       Int?
+  usedCount   Int          @default(0)
+  expireAt    DateTime
+  isActive    Boolean      @default(true)
+
+  orders Order[]
+
+  @@index([code])
+  @@index([isActive])
+  @@index([expireAt])
+}
+
+model NotificationJob {
+  id        String      @id @default(uuid())
+  channel   ChannelType
+  recipient String
+  subject   String?
+  content   String
+  metadata  Json?
+
+  status      JobStatus @default(PENDING)
+  attempts    Int       @default(0)
+  error       String?
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+
+  @@index([status])
+  @@index([createdAt])
+}
