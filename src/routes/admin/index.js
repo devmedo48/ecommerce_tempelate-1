@@ -4,6 +4,7 @@ import productRoutes from "./productRoute.js";
 import dashboardRoutes from "./dashboardRoute.js";
 import offerRoutes from "./offerRoute.js";
 import orderRoutes from "./orderRoute.js";
+import couponRoutes from "./couponRoute.js";
 import { authenticate, requireAdmin } from "../../middleware/auth.js";
 
 const router = Router();
@@ -19,5 +20,6 @@ router.use("/products", productRoutes);
 router.use("/dashboard", dashboardRoutes);
 router.use("/offers", offerRoutes);
 router.use("/orders", orderRoutes);
+router.use("/coupons", couponRoutes);
 
 export default router;
