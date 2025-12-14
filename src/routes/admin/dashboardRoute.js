@@ -1,8 +1,12 @@
 import { Router } from "express";
-import { getDashboardStats } from "../../controllers/admin/dashboardController.js";
+import {
+  getDashboardStats,
+  getAnalytics,
+} from "../../controllers/admin/dashboardController.js";
 
 const router = Router();
 
 router.get("/", getDashboardStats);
+router.get("/analytics", getAnalytics);
 
 export default router;
