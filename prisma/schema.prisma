@@ -111,6 +111,7 @@ model User {
   // Role specific profiles
   admin    Admin?
   customer Customer?
+  cart     Cart?
 
   @@index([email])
   @@index([role])
@@ -182,6 +183,7 @@ model Product {
   description String?
   price       Decimal
   images      String[]
+  features    String[] // e.g. ["100% Organic Cotton", "GOTS Certified"]
   isActive    Boolean  @default(true)
 
   createdAt DateTime @default(now())
@@ -195,6 +197,7 @@ model Product {
   offerId    String?
   category   Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   categoryId String?
+  cartItems  CartItem[]
 
   @@index([isActive])
   @@index([offerId])
@@ -324,4 +327,32 @@ model NotificationJob {
 
   @@index([status])
   @@index([createdAt])
+}
+
+// Cart for server-side cart management
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String  @id @default(uuid())
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int     @default(1)
+  // Store selected modifier options as JSON: { modifierId: optionId or [optionIds] }
+  modifiers Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId, modifiers])
+  @@index([cartId])
+  @@index([productId])
 }

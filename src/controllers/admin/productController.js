@@ -33,6 +33,7 @@ export const getProducts = asyncHandler(async (req, res) => {
       include: {
         modifiers: { include: { options: true } },
         offer: { select: { id: true, name: true, type: true, value: true } },
+        category: { select: { id: true, name: true } },
         _count: { select: { reviews: true, orderItems: true } },
       },
       take: Number(limit),
@@ -66,6 +67,7 @@ export const getProduct = asyncHandler(async (req, res) => {
     include: {
       modifiers: { include: { options: true } },
       offer: true,
+      category: true,
       reviews: {
         take: 10,
         orderBy: { createdAt: "desc" },
@@ -87,7 +89,7 @@ export const getProduct = asyncHandler(async (req, res) => {
  * @route POST /api/v1/admin/products
  */
 export const createProduct = asyncHandler(async (req, res) => {
-  const { name, description, price, modifiers } = req.body;
+  const { name, description, price, modifiers, categoryId } = req.body;
   const files = req.files;
 
   // Process Images
@@ -116,6 +118,7 @@ export const createProduct = asyncHandler(async (req, res) => {
       description,
       price: parseFloat(price),
       images: processedImages,
+      ...(categoryId && { categoryId }),
       modifiers: {
         create: parsedModifiers.map((mod) => ({
           name: mod.name,
@@ -132,6 +135,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     },
     include: {
       modifiers: { include: { options: true } },
+      category: true,
     },
   });
 
@@ -156,12 +160,15 @@ export const updateProduct = asyncHandler(async (req, res) => {
   if (data.description !== undefined) updateData.description = data.description;
   if (data.price !== undefined) updateData.price = parseFloat(data.price);
   if (data.isActive !== undefined) updateData.isActive = data.isActive;
+  if (data.categoryId !== undefined)
+    updateData.categoryId = data.categoryId || null;
 
   const product = await prisma.product.update({
     where: { id },
     data: updateData,
     include: {
       modifiers: { include: { options: true } },
+      category: true,
     },
   });
 

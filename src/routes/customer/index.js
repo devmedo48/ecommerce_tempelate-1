@@ -4,7 +4,7 @@ import orderRoute from "./orderRoute.js";
 import productRoute from "./productRoute.js";
 import reviewRoute from "./reviewRoute.js";
 import addressRoute from "./addressRoute.js";
-import paymentRoute from "./paymentRoute.js";
+import cartRoute from "./cartRoute.js";
 import { authenticate } from "../../middleware/auth.js";
 
 const router = Router();
@@ -19,6 +19,6 @@ router.use("/reviews", reviewRoute);
 // Protected routes (auth required)
 router.use("/orders", authenticate, orderRoute);
 router.use("/addresses", authenticate, addressRoute);
-router.use("/payments", authenticate, paymentRoute);
+router.use("/cart", authenticate, cartRoute);
 
 export default router;

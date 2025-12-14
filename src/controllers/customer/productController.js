@@ -21,6 +21,7 @@ export const getProducts = asyncHandler(async (req, res) => {
       where,
       include: {
         offer: true,
+        category: { select: { id: true, name: true } },
         modifiers: {
           include: { options: true },
         },
@@ -61,6 +62,7 @@ export const getProduct = asyncHandler(async (req, res) => {
     where: { id },
     include: {
       offer: true,
+      category: { select: { id: true, name: true } },
       modifiers: {
         include: { options: true },
       },

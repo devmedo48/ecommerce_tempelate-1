@@ -7,6 +7,7 @@ export * from "./customer/order.js";
 export * from "./customer/address.js";
 export * from "./customer/review.js";
 export * from "./customer/product.js";
+export * from "./customer/cart.js";
 
 // Admin
 export * from "./admin/auth.js";
