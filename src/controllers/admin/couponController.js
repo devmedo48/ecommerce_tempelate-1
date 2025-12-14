@@ -33,7 +33,7 @@ export const getCoupons = asyncHandler(async (req, res) => {
   const [coupons, total] = await Promise.all([
     prisma.coupon.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: { expireAt: "desc" },
       skip: (page - 1) * limit,
       take: parseInt(limit),
       include: {
