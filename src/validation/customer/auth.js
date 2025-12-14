@@ -49,18 +49,16 @@ export const updateProfileSchema = z.object({
     .optional(),
 });
 
-// Email/Password Auth Schemas
-export const loginSchema = z.object({
-  email: emailSchema,
-  password: z.string({ required_error: "Password is required" }).min(1),
+// Aliases for customer auth routes
+export const sendOtpSchema = requestLoginOtpSchema;
+export const verifyOtpSchema = verifyLoginOtpSchema;
+
+// Google OAuth Schema
+export const googleLoginSchema = z.object({
+  idToken: z.string({ required_error: "Google ID token is required" }),
 });
 
-export const registerSchema = z.object({
-  email: emailSchema,
-  password: z
-    .string({ required_error: "Password is required" })
-    .min(6, "Password must be at least 6 characters"),
-  firstName: z.string().min(1).max(50).optional(),
-  lastName: z.string().min(1).max(50).optional(),
-  phone: z.string().max(20).optional(),
+// Refresh Token Schema
+export const customerRefreshTokenSchema = z.object({
+  refreshToken: z.string({ required_error: "Refresh token is required" }),
 });

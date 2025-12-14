@@ -1,0 +1,1188 @@
+{
+  "info": {
+    "_postman_id": "ecommerce-template-api",
+    "name": "E-Commerce Template API",
+    "description": "Complete API collection for E-Commerce Template with Admin and Customer endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "productId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "addressId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reviewId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "offerId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Admin Auth",
+      "description": "Admin authentication endpoints (password-based)",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.data.token);",
+                  "}",
+                  "if (jsonData.data && jsonData.data.refreshToken) {",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.data.refreshToken);",
+                  "}",
+                  "if (jsonData.data && jsonData.data.user && jsonData.data.user.id) {",
+                  "    pm.collectionVariables.set('userId', jsonData.data.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@ecommerce.com\",\n  \"password\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "auth", "refresh-token"]
+            }
+          }
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer Auth",
+      "description": "Customer authentication endpoints (OTP-based)",
+      "item": [
+        {
+          "name": "Send OTP",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/send-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "auth", "send-otp"]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.data.token);",
+                  "}",
+                  "if (jsonData.data && jsonData.data.refreshToken) {",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.data.refreshToken);",
+                  "}",
+                  "if (jsonData.data && jsonData.data.user && jsonData.data.user.id) {",
+                  "    pm.collectionVariables.set('userId', jsonData.data.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"otp\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/verify-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "auth", "verify-otp"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                  "}",
+                  "if (jsonData.data && jsonData.data.refreshToken) {",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "auth", "refresh-token"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "auth", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Logout All Devices",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/logout-all-devices",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "auth", "logout-all-devices"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer",
+      "item": [
+        {
+          "name": "Products",
+          "item": [
+            {
+              "name": "Get Products",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.length > 0) {",
+                      "    pm.collectionVariables.set('productId', jsonData.data[0].id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer/products?page=1&limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "products"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "10" },
+                    { "key": "search", "value": "", "disabled": true },
+                    { "key": "sortBy", "value": "createdAt", "disabled": true },
+                    { "key": "sortOrder", "value": "desc", "disabled": true }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Product",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer/products/{{productId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "products", "{{productId}}"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reviews",
+          "item": [
+            {
+              "name": "Get Product Reviews",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer/reviews/product/{{productId}}?page=1&limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "reviews", "product", "{{productId}}"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "10" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get My Reviews",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer/reviews/me?page=1&limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "reviews", "me"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "10" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create Review",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.id) {",
+                      "    pm.collectionVariables.set('reviewId', jsonData.data.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"rating\": 5,\n  \"comment\": \"Great product!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer/reviews",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "reviews"]
+                }
+              }
+            },
+            {
+              "name": "Update Review",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"rating\": 4,\n  \"comment\": \"Updated review\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer/reviews/{{reviewId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "reviews", "{{reviewId}}"]
+                }
+              }
+            },
+            {
+              "name": "Delete Review",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer/reviews/{{reviewId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "reviews", "{{reviewId}}"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Addresses",
+          "item": [
+            {
+              "name": "Get Addresses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer/addresses",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "addresses"]
+                }
+              }
+            },
+            {
+              "name": "Create Address",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.id) {",
+                      "    pm.collectionVariables.set('addressId', jsonData.data.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"street\": \"123 Main St\",\n  \"city\": \"Cairo\",\n  \"state\": \"Cairo\",\n  \"zip\": \"12345\",\n  \"country\": \"Egypt\",\n  \"label\": \"Home\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer/addresses",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "addresses"]
+                }
+              }
+            },
+            {
+              "name": "Update Address",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"street\": \"456 Updated St\",\n  \"city\": \"Alexandria\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer/addresses/{{addressId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "addresses", "{{addressId}}"]
+                }
+              }
+            },
+            {
+              "name": "Set Default Address",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer/addresses/default/{{addressId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "addresses", "default", "{{addressId}}"]
+                }
+              }
+            },
+            {
+              "name": "Delete Address",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer/addresses/{{addressId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "addresses", "{{addressId}}"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Orders",
+          "item": [
+            {
+              "name": "Place Order (COD)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.id) {",
+                      "    pm.collectionVariables.set('orderId', jsonData.data.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"quantity\": 1,\n      \"modifiers\": []\n    }\n  ],\n  \"paymentMethod\": \"COD\",\n  \"addressId\": \"{{addressId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer/orders",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "orders"]
+                }
+              }
+            },
+            {
+              "name": "Place Order (Online + New Address)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.id) {",
+                      "    pm.collectionVariables.set('orderId', jsonData.data.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"quantity\": 2\n    }\n  ],\n  \"paymentMethod\": \"ONLINE\",\n  \"newAddress\": {\n    \"street\": \"789 New St\",\n    \"city\": \"Giza\",\n    \"state\": \"Giza\",\n    \"zip\": \"54321\",\n    \"country\": \"Egypt\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer/orders",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "orders"]
+                }
+              }
+            },
+            {
+              "name": "Get Orders",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer/orders?page=1&limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "orders"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "10" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Order",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer/orders/{{orderId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "orders", "{{orderId}}"]
+                }
+              }
+            },
+            {
+              "name": "Cancel Order",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer/orders/{{orderId}}/cancel",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "orders", "{{orderId}}", "cancel"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Payments",
+          "item": [
+            {
+              "name": "Save Payment ID",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"paymentId\": \"pay_xxx\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer/payments/save",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "payments", "save"]
+                }
+              }
+            },
+            {
+              "name": "Get Payment Status",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer/payments/{{orderId}}/status",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer", "payments", "{{orderId}}", "status"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Dashboard",
+          "item": [
+            {
+              "name": "Get Dashboard Stats",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/dashboard",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "dashboard"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Products",
+          "item": [
+            {
+              "name": "Get Products",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.length > 0) {",
+                      "    pm.collectionVariables.set('productId', jsonData.data[0].id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/products?page=1&limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "products"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "10" },
+                    { "key": "search", "value": "", "disabled": true },
+                    { "key": "isActive", "value": "true", "disabled": true }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Product",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/products/{{productId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "products", "{{productId}}"]
+                }
+              }
+            },
+            {
+              "name": "Create Product",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.id) {",
+                      "    pm.collectionVariables.set('productId', jsonData.data.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "name", "value": "Test Product", "type": "text" },
+                    { "key": "description", "value": "A test product", "type": "text" },
+                    { "key": "price", "value": "29.99", "type": "text" },
+                    { "key": "modifiers", "value": "[{\"name\":\"Size\",\"isRequired\":true,\"multiSelect\":false,\"options\":[{\"name\":\"Small\",\"price\":0},{\"name\":\"Large\",\"price\":5}]}]", "type": "text" },
+                    { "key": "images", "type": "file", "src": [], "disabled": true }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/products",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "products"]
+                }
+              }
+            },
+            {
+              "name": "Update Product",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Product Name\",\n  \"price\": 39.99,\n  \"isActive\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/products/{{productId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "products", "{{productId}}"]
+                }
+              }
+            },
+            {
+              "name": "Delete Product",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/products/{{productId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "products", "{{productId}}"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Orders",
+          "item": [
+            {
+              "name": "Get Orders",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.length > 0) {",
+                      "    pm.collectionVariables.set('orderId', jsonData.data[0].id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/orders?page=1&limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "orders"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "10" },
+                    { "key": "status", "value": "PENDING", "disabled": true },
+                    { "key": "search", "value": "", "disabled": true },
+                    { "key": "startDate", "value": "", "disabled": true },
+                    { "key": "endDate", "value": "", "disabled": true }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Order",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/orders/{{orderId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "orders", "{{orderId}}"]
+                }
+              }
+            },
+            {
+              "name": "Update Order Status",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"CONFIRMED\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/orders/{{orderId}}/status",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "orders", "{{orderId}}", "status"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Offers",
+          "item": [
+            {
+              "name": "Get Offers",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.length > 0) {",
+                      "    pm.collectionVariables.set('offerId', jsonData.data[0].id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/offers?page=1&limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "offers"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "10" },
+                    { "key": "scope", "value": "GLOBAL", "disabled": true },
+                    { "key": "isActive", "value": "true", "disabled": true }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Offer",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/offers/{{offerId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "offers", "{{offerId}}"]
+                }
+              }
+            },
+            {
+              "name": "Create Offer (Global)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.id) {",
+                      "    pm.collectionVariables.set('offerId', jsonData.data.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Summer Sale\",\n  \"description\": \"20% off all products\",\n  \"type\": \"PERCENTAGE\",\n  \"value\": 20,\n  \"scope\": \"GLOBAL\",\n  \"startDate\": \"2024-01-01T00:00:00Z\",\n  \"endDate\": \"2024-12-31T23:59:59Z\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/offers",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "offers"]
+                }
+              }
+            },
+            {
+              "name": "Create Offer (Product)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.id) {",
+                      "    pm.collectionVariables.set('offerId', jsonData.data.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Product Special\",\n  \"description\": \"$5 off selected products\",\n  \"type\": \"FIXED\",\n  \"value\": 5,\n  \"scope\": \"PRODUCT\",\n  \"startDate\": \"2024-01-01T00:00:00Z\",\n  \"endDate\": \"2024-12-31T23:59:59Z\",\n  \"productIds\": [\"{{productId}}\"]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/offers",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "offers"]
+                }
+              }
+            },
+            {
+              "name": "Update Offer",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Offer\",\n  \"value\": 15,\n  \"isActive\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/offers/{{offerId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "offers", "{{offerId}}"]
+                }
+              }
+            },
+            {
+              "name": "Delete Offer",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/offers/{{offerId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["admin", "offers", "{{offerId}}"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "description": "External webhook endpoints for payment providers",
+      "item": [
+        {
+          "name": "Moyasar Webhook",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Moyasar-Signature",
+                "value": "your_calculated_signature",
+                "description": "HMAC-SHA256 signature of request body"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"payment_paid\",\n  \"data\": {\n    \"id\": \"payment_id_from_moyasar\",\n    \"status\": \"paid\",\n    \"amount\": 10000,\n    \"currency\": \"SAR\",\n    \"metadata\": {\n      \"orderId\": \"{{orderId}}\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhooks/moyasar",
+              "host": ["{{baseUrl}}"],
+              "path": ["webhooks", "moyasar"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

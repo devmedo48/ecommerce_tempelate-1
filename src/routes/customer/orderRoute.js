@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { z } from "zod";
 import {
   placeOrder,
   getOrders,
@@ -14,12 +15,17 @@ import {
 
 const router = Router();
 
+// Params schema for order ID
+const orderIdParamsSchema = z.object({
+  id: uuidSchema,
+});
+
 router.post("/", validate(placeOrderSchema), placeOrder);
 router.get("/", validate(paginationSchema, "query"), getOrders);
-router.get("/:id", validate({ params: { id: uuidSchema } }), getOrder);
+router.get("/:id", validate({ params: orderIdParamsSchema }), getOrder);
 router.put(
   "/:id/cancel",
-  validate({ params: { id: uuidSchema } }),
+  validate({ params: orderIdParamsSchema }),
   cancelOrder
 );
 

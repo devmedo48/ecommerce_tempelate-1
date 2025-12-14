@@ -1,4 +1,5 @@
 import { Router } from "express";
+import authRoute from "./authRoute.js";
 import orderRoute from "./orderRoute.js";
 import productRoute from "./productRoute.js";
 import reviewRoute from "./reviewRoute.js";
@@ -7,6 +8,9 @@ import paymentRoute from "./paymentRoute.js";
 import { authenticate } from "../../middleware/auth.js";
 
 const router = Router();
+
+// Auth routes (send-otp, verify-otp are public; profile/logout are protected within authRoute)
+router.use("/auth", authRoute);
 
 // Public routes (no auth required)
 router.use("/products", productRoute);

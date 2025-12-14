@@ -7,6 +7,7 @@ import {
   loginWithGoogle,
   logoutAllCustomerDevices,
   logoutCustomer,
+  refreshCustomerToken,
   sendOtp,
   updateProfile,
   verifyOTP,
@@ -17,6 +18,7 @@ import {
   updateProfileSchema,
   verifyOtpSchema,
   googleLoginSchema,
+  customerRefreshTokenSchema,
 } from "../../validation/index.js";
 
 const router = express.Router();
@@ -24,6 +26,11 @@ const router = express.Router();
 router.post("/send-otp", validate(sendOtpSchema), sendOtp);
 router.post("/verify-otp", validate(verifyOtpSchema), verifyOTP);
 router.post("/google-login", validate(googleLoginSchema), loginWithGoogle);
+router.post(
+  "/refresh-token",
+  validate(customerRefreshTokenSchema),
+  refreshCustomerToken
+);
 
 //** Protected routes *//
 router.use(authenticate);
