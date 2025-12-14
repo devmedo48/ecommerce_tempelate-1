@@ -6,6 +6,7 @@ import offerRoutes from "./offerRoute.js";
 import orderRoutes from "./orderRoute.js";
 import couponRoutes from "./couponRoute.js";
 import customerRoutes from "./customerRoute.js";
+import categoryRoutes from "./categoryRoute.js";
 import { authenticate, requireAdmin } from "../../middleware/auth.js";
 
 const router = Router();
@@ -23,5 +24,6 @@ router.use("/offers", offerRoutes);
 router.use("/orders", orderRoutes);
 router.use("/coupons", couponRoutes);
 router.use("/customers", customerRoutes);
+router.use("/categories", categoryRoutes);
 
 export default router;

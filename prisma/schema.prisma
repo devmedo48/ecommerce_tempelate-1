@@ -163,6 +163,19 @@ model Customer {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  image       String?
+  isActive    Boolean   @default(true)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isActive])
+}
+
 model Product {
   id          String   @id @default(uuid())
   name        String
@@ -180,9 +193,12 @@ model Product {
   orderItems OrderItem[]
   offer      Offer?            @relation(fields: [offerId], references: [id], onDelete: SetNull)
   offerId    String?
+  category   Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  categoryId String?
 
   @@index([isActive])
   @@index([offerId])
+  @@index([categoryId])
   @@index([createdAt])
 }
 
